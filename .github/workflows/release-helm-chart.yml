@@ -1,3 +1,9 @@
+# This workflow will:
+
+# 1) Trigger on tags that start with v (e.g., v1.0.0).
+# 2) Package the Helm chart located in <chart-directory>.
+# 3) Create a GitHub Release and upload the packaged .tgz chart file as an asset.
+
 name: Release Helm Chart
 
 on:
