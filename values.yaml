@@ -1,0 +1,23 @@
+# Keycloak subchart values
+keycloak:
+  auth:
+    adminUser: admin
+    adminPassword: "" # Will be required in installation
+  service:
+    type: ClusterIP
+    # Add any other Keycloak values you want to override
+
+# Custom values for your post-install job
+postInstall:
+  image: bitnami/kubectl:latest
+  realm:
+    name: "myrealm"
+    displayName: "My Organization"
+    clients:
+    - clientId: "myclient"
+      secret: "" # Will be required in installation
+      redirectUris:
+      - "https://myapp.example.com/*"
+  serviceAccount:
+    create: true
+    name: "keycloak-setup"

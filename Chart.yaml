@@ -1,0 +1,8 @@
+apiVersion: v2
+name: my-keycloak
+description: Custom Keycloak deployment with automatic realm setup
+version: 0.1.0
+dependencies:
+- name: keycloak
+  version: "15.1.1" # Replace with your desired version
+  repository: https://charts.bitnami.com/bitnami

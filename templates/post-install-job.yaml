@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-setup-script
+data:
+  setup-realm.sh: |-
+{{ .Files.Get "scripts/setup-realm.sh" | indent 4 }}
+
+---
+{{- if .Values.postInstall.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.postInstall.serviceAccount.name }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-setup
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Name }}-setup
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.postInstall.serviceAccount.name }}
+roleRef:
+  kind: Role
+  name: {{ .Release.Name }}-setup
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-setup
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}-setup
+    spec:
+      serviceAccountName: {{ .Values.postInstall.serviceAccount.name }}
+      containers:
+        - name: setup
+          image: {{ .Values.postInstall.image }}
+          command: ["/bin/bash"]
+          args: ["/scripts/setup-realm.sh"]
+          env:
+            - name: KEYCLOAK_URL
+              value: http://{{ .Release.Name }}-keycloak
+            - name: KEYCLOAK_ADMIN
+              value: {{ .Values.keycloak.auth.adminUser }}
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              value: {{ .Values.keycloak.auth.adminPassword }}
+            - name: REALM_NAME
+              value: {{ .Values.postInstall.realm.name }}
+            - name: REALM_DISPLAY_NAME
+              value: {{ .Values.postInstall.realm.displayName }}
+            - name: CLIENT_ID
+              value: {{ index .Values.postInstall.realm.clients 0 "clientId" }}
+            - name: CLIENT_SECRET
+              value: {{ index .Values.postInstall.realm.clients 0 "secret" }}
+            - name: REDIRECT_URIS
+              value: {{ index .Values.postInstall.realm.clients 0 "redirectUris" | toJson | quote }}
+          volumeMounts:
+            - name: setup-script
+              mountPath: /scripts
+      volumes:
+        - name: setup-script
+          configMap:
+            name: {{ .Release.Name }}-setup-script
+            defaultMode: 0755
+      restartPolicy: OnFailure
