@@ -25,14 +25,13 @@ jobs:
           version: v3.9.0  # Set your preferred Helm version
 
       - name: Package Helm chart
-        run: helm package <chart-directory>
-        # Replace <chart-directory> with the path to your Helm chart, e.g., ./charts/my-chart
+        run: helm package .
 
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
           release_name: ${{ github.ref_name }}
@@ -42,7 +41,7 @@ jobs:
       - name: Upload Helm chart to release
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./*.tgz
