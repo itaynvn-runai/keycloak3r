@@ -7,6 +7,7 @@
 name: Release Helm Chart
 
 on:
+  workflow_dispatch:  # Allows manual triggering from the GitHub UI
   push:
     tags:
       - "v*"  # Trigger the workflow on version tags like v1.0.0
