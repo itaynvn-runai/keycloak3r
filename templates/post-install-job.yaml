@@ -3,8 +3,8 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-setup-script
 data:
-  setup-realm.sh: |-
-{{ .Files.Get "scripts/setup-realm.sh" | indent 4 }}
+  create_assets.sh: |-
+{{ .Files.Get "scripts/create_assets.sh" | indent 4 }}
 
 ---
 {{- if .Values.postInstall.serviceAccount.create }}
@@ -53,24 +53,10 @@ spec:
         - name: setup
           image: {{ .Values.postInstall.image }}
           command: ["/bin/bash"]
-          args: ["/scripts/setup-realm.sh"]
-          env:
-            - name: KEYCLOAK_URL
-              value: http://{{ .Release.Name }}-keycloak
-            - name: KEYCLOAK_ADMIN
-              value: {{ .Values.keycloak.auth.adminUser }}
-            - name: KEYCLOAK_ADMIN_PASSWORD
-              value: {{ .Values.keycloak.auth.adminPassword }}
-            - name: REALM_NAME
-              value: {{ .Values.postInstall.realm.name }}
-            - name: REALM_DISPLAY_NAME
-              value: {{ .Values.postInstall.realm.displayName }}
-            - name: CLIENT_ID
-              value: {{ index .Values.postInstall.realm.clients 0 "clientId" }}
-            - name: CLIENT_SECRET
-              value: {{ index .Values.postInstall.realm.clients 0 "secret" }}
-            - name: REDIRECT_URIS
-              value: {{ index .Values.postInstall.realm.clients 0 "redirectUris" | toJson | quote }}
+          args: ["/scripts/create_assets.sh"]
+          envsFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-setup-script
           volumeMounts:
             - name: setup-script
               mountPath: /scripts
