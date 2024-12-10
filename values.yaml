@@ -11,15 +11,21 @@ keycloak:
 webApp:
   url: "https://my-webapp.com"
 
+users:
+- firstName: "Willy"
+  lastName: "Wonka"
+  email: "willy@wonka.xyz"
+  username: "willywonka999"
+  password: "123456"
+
 customEnv:
-  user:
-    firstName: "Willy"
-    lastName: "Wonka"
-    email: "willy@wonka.xyz"
-    username: "willywonka999"
-    password: "123456"
   client:
     oidc:
+      enabled: false
+      id: "mytestclient"
+      realm: "mytestrealm"
+    saml:
+      enabled: false
       id: "mytestclient"
       realm: "mytestrealm"
   createCustomMappers: false

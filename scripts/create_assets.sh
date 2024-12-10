@@ -52,19 +52,29 @@ create_realm() {
   echo "##### realm '$KEYCLOAK_REALM' created"
 }
 
-# Create user
+# Create users
 create_user() {
-curl -s -X POST "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/users" \
--H "Authorization: Bearer $NEW_TOKEN" \
--H "Content-Type: application/json" --data-raw "{
-    \"firstName\":\"$USER_FIRST_NAME\",
-    \"lastName\":\"$USER_LAST_NAME\",
-    \"email\":\"$USER_EMAIL\",
-    \"username\":\"$USER_USERNAME\",
-    \"enabled\":\"true\",
-    \"emailVerified\": true,
-    \"credentials\": [{\"type\": \"password\", \"value\": \"$USER_PASSWORD\", \"temporary\": false}]}"
-echo "##### example user '$USER_EMAIL' created"
+users=$(cat /config/users.json)
+echo "Amount of users: $(echo "$users" | jq '. | length')"
+echo "$users" | jq -c '.[]' | while read -r user; do
+  firstName=$(echo "$user" | jq -r '.firstName')
+  lastName=$(echo "$user" | jq -r '.lastName')
+  username=$(echo "$user" | jq -r '.username')
+  email=$(echo "$user" | jq -r '.email')
+  password=$(echo "$user" | jq -r '.password')
+  echo "##### creating user '$email' ..."
+  curl -s -X POST "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/users" \
+  -H "Authorization: Bearer $NEW_TOKEN" \
+  -H "Content-Type: application/json" --data-raw "{
+      \"firstName\":\"$firstName\",
+      \"lastName\":\"$lastName\",
+      \"email\":\"$email\",
+      \"username\":\"$username\",
+      \"enabled\":\"true\",
+      \"emailVerified\": true,
+      \"credentials\": [{\"type\": \"password\", \"value\": \"$password\", \"temporary\": false}]}"
+  echo "##### user '$email' created"
+done
 }
 
 # Create an OIDC client
@@ -94,7 +104,7 @@ create_oidc_client() {
   echo "=> OIDC client secret: '$CLIENT_SECRET'"
 }
 
-# Create a SAML client (inactive, dont use)
+# Create a SAML client (TO BE FIXED)
 create_saml_client() {
   echo "##### Creating SAML client '$KEYCLOAK_CLIENT_ID'..."
   curl --location -s -X POST "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients" \

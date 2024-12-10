@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm-users
+data:
+  users.json: |
+    {{ .Values.users | toJson | indent 4 }}

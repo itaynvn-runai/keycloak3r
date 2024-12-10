@@ -11,11 +11,10 @@
       KEYCLOAK_HOST_DOMAIN: {{ .Values.keycloak.host.domain }}
       KEYCLOAK_HOST_PATH: {{ .Values.keycloak.host.path }}
       WEBAPP_URL: {{ .Values.webApp.url }}
-      CUSTOMENV_USER_FIRSTNAME: {{ .Values.customEnv.user.firstName }}
-      CUSTOMENV_USER_LASTNAME: {{ .Values.customEnv.user.lastName }}
-      CUSTOMENV_USER_EMAIL: {{ .Values.customEnv.user.email }}
-      CUSTOMENV_USER_USERNAME: {{ .Values.customEnv.user.username }}
-      CUSTOMENV_USER_PASSWORD: {{ .Values.customEnv.user.password }}
+      CUSTOMENV_CLIENT_OIDC_ENABLED: {{ .Values.customEnv.client.oidc.enabled }}
       CUSTOMENV_CLIENT_OIDC_ID: {{ .Values.customEnv.client.oidc.id }}
       CUSTOMENV_CLIENT_OIDC_REALM: {{ .Values.customEnv.client.oidc.realm }}
+      CUSTOMENV_CLIENT_SAML_ENABLED: {{ .Values.customEnv.client.saml.enabled }}
+      CUSTOMENV_CLIENT_SAML_ID: {{ .Values.customEnv.client.saml.id }}
+      CUSTOMENV_CLIENT_SAML_REALM: {{ .Values.customEnv.client.saml.realm }}
       CUSTOMENV_CREATE_CUSTOM_MAPPERS: {{ .Values.customEnv.createCustomMappers }}

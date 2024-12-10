@@ -60,9 +60,14 @@ spec:
           volumeMounts:
             - name: setup-script
               mountPath: /scripts
+            - name: keycloak-realm-users
+              mountPath: /config
       volumes:
         - name: setup-script
           configMap:
             name: {{ .Release.Name }}-setup-script
             defaultMode: 0755
+        - name: keycloak-realm-users
+          configMap:
+            name: keycloak-realm-users
       restartPolicy: OnFailure
