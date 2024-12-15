@@ -1,31 +1,45 @@
 keycloak:
-  admin:
-    username: "root"
-    password: "root"
-  url: "https://my.domain.com/keycloak"
-  realm: "mytestingrealm"
-  host:
-    domain: "my.domain.com"
-    path: "/keycloak"
+  settings:
+    admin:
+      username: "root"
+      password: "root"
+    url: "https://bgu-219-latest.runailabs-cs.com/itays-idp-server"
+    host:
+      domain: "bgu-219-latest.runailabs-cs.com"
+      path: "/itays-idp-server"
 
-webApp:
-  url: "https://my-webapp.com"
+realm:
+  name: my-org
+
+groups:
+  - name: admin-group
+  - name: developer-group
+  - name: read-only-group
 
 users:
-- firstName: "Willy"
-  lastName: "Wonka"
-  email: "willy@wonka.xyz"
-  username: "willywonka999"
-  password: "123456"
+  - email: john.doe@example.com
+    password: "123456"
+    username: john.doe
+    first-name: John
+    last-name: Doe
+    group: admin-group
+  - email: jane.smith@example.com
+    password: "123456"
+    username: jane.smith
+    first-name: Jane
+    last-name: Smith
+    group: developer-group
+  - email: bob.brown@example.com
+    password: "123456"
+    username: bob.brown
+    first-name: Bob
+    last-name: Brown
+    group: read-only-group
 
-customEnv:
-  client:
-    oidc:
-      enabled: false
-      id: "mytestclient"
-      realm: "mytestrealm"
-    saml:
-      enabled: false
-      id: "mytestclient"
-      realm: "mytestrealm"
-  createCustomMappers: false
+clients:
+  - type: oidc
+    id: my-oidc-client
+    webAppURL: https://my-webapp.com
+  - type: saml
+    id: my-saml-client
+    webAppURL: https://my-webapp.com

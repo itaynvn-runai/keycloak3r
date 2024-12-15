@@ -77,6 +77,35 @@ echo "$users" | jq -c '.[]' | while read -r user; do
 done
 }
 
+# Create group
+curl --location -s -X POST "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/groups" \
+  -H 'accept: application/json, text/plain, */*' \
+  -H "authorization: Bearer $TOKEN" \
+  --data-raw "{\"name\":\"$GROUP_NAME\"}"
+
+# add members to group
+curl --location -s -X PUT "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/users/$USER_UUID/groups/$GROUP_UUID' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'authorization: Bearer $TOKEN' \
+  --data-raw '{}'"
+
+# create groups mapper for client
+curl --location -s -X POST "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients/$CLIENT_UUID/protocol-mappers/models' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H "authorization: Bearer $TOKEN" \
+  --data-raw '{
+    "protocol": "saml",
+    "protocolMapper": "saml-group-membership-mapper",
+    "name": "Groups Mapper",
+    "config": {
+        "attribute.name": "GROUPS",
+        "friendly.name": "",
+        "attribute.nameformat": "Basic",
+        "single": "true",
+        "full.path": "false"
+    }
+}'"
+
 # Create an OIDC client
 create_oidc_client() {
   echo "##### Creating OIDC client '$KEYCLOAK_CLIENT_ID'..."
@@ -104,34 +133,39 @@ create_oidc_client() {
   echo "=> OIDC client secret: '$CLIENT_SECRET'"
 }
 
-# Create a SAML client (TO BE FIXED)
+# Create a SAML client
 create_saml_client() {
   echo "##### Creating SAML client '$KEYCLOAK_CLIENT_ID'..."
   curl --location -s -X POST "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients" \
   --header "Authorization: Bearer $TOKEN" \
   --header "Content-Type: application/json" \
   --data-raw "{
-    \"clientId\": \"$KEYCLOAK_CLIENT_ID\",
     \"protocol\": \"saml\",
-    \"enabled\": true,
-    \"redirectUris\": [\"$WEB_APP_URL/saml/callback\"],
+    \"clientId\": \"$KEYCLOAK_CLIENT_ID\",
+    \"name\": \"my test SAML client\",
+    \"description\": \"\",
+    \"publicClient\": true,
+    \"authorizationServicesEnabled\": false,
+    \"serviceAccountsEnabled\": false,
+    \"implicitFlowEnabled\": false,
+    \"directAccessGrantsEnabled\": true,
+    \"standardFlowEnabled\": true,
+    \"frontchannelLogout\": true,
+    \"alwaysDisplayInConsole\": false,
+    \"rootUrl\": \"$WEB_APP_URL\",
     \"baseUrl\": \"$WEB_APP_URL\",
+    \"adminUrl\": \"\",
+    \"redirectUris\": [\"$WEB_APP_URL/auth/realms/runai/broker/saml/endpoint\"],
     \"attributes\": {
-      \"saml.assertion.signature\": \"false\",
-      \"saml.force.post.binding\": \"true\",
-      \"saml.multivalued.roles\": \"false\",
-      \"saml.encrypt\": \"false\",
-      \"saml.server.signature\": \"false\",
-      \"saml.server.signature.keyinfo.ext\": \"false\",
-      \"exclude.session.state.from.auth.response\": \"false\",
-      \"saml_force_name_id_format\": \"false\",
-      \"saml.client.signature\": \"false\",
-      \"tls.client.certificate.bound.access.tokens\": \"false\",
-      \"saml.authnstatement\": \"false\",
-      \"display.on.consent.screen\": \"false\",
-      \"saml.onetimeuse.condition\": \"false\"
+        \"login_theme\": \"genny\",
+        \"saml_force_name_id_format\": \"true\",
+        \"saml.client.signature\": \"false\",
+        \"saml_name_id_format\": \"email\",
+        \"saml_idp_initiated_sso_url_name\": \"\",
+        \"saml_idp_initiated_sso_relay_state\": \"\",
+        \"post.logout.redirect.uris\": \"$WEB_APP_URL/*\"
     }
-  }"
+}"
   echo "##### SAML client '$KEYCLOAK_CLIENT_ID' created"
   CLIENT_UUID=$(curl --location -s -X GET "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients" \
   --header "Authorization: Bearer $NEW_TOKEN" \
