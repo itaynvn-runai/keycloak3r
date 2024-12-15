@@ -11,11 +11,6 @@ keycloak:
 realm:
   name: my-org
 
-groups:
-  - name: admin-group
-  - name: developer-group
-  - name: read-only-group
-
 users:
   - email: john.doe@example.com
     password: "123456"
@@ -29,11 +24,23 @@ users:
     first-name: Jane
     last-name: Smith
     group: developer-group
-  - email: bob.brown@example.com
+  - email: itzik@example.com
     password: "123456"
-    username: bob.brown
-    first-name: Bob
-    last-name: Brown
+    username: itzikitzik
+    first-name: Itz
+    last-name: Ick
+    group: read-only-group
+  - email: jacky.fox@example.com
+    password: "123456"
+    username: jacky.fox
+    first-name: Jacky
+    last-name: Fox
+    group: read-only-group
+  - email: blip.blop@example.com
+    password: "123456"
+    username: blip.blop
+    first-name: Blip
+    last-name: Blop
     group: read-only-group
 
 clients:

@@ -145,6 +145,14 @@ class KeycloakManager:
         json_response = json.loads(response.content)
         secret = json_response["value"]
         return secret
+    
+    def get_groups(self, group_name: str):
+        response = self.api.request("get", f"admin/realms/{realm_name}/groups")
+        groups = json.loads(response.content)
+        for group in groups:
+            if group_name == group.get("name"):
+                return group.get("id")
+        return False
 
     def add_users_to_group(self, user_uuid: str, group_uuid: str):
         """Add a user as a member of a group in the realm."""
@@ -212,6 +220,8 @@ if __name__ == "__main__":
                 logging.info(f"{client_type.upper()} Client '{client_id}' created (UUID: '{client_uuid}')")
                 logging.info(f"{client_type.upper()} Client '{client_id}' created (Secret: '{client_secret}')")
 
+
+
         # create users and groups
         for user in keycloak_data.get_users():
             username = user["username"]
@@ -226,15 +236,18 @@ if __name__ == "__main__":
             user_url = user.headers["Location"]
             logging.info(f"User '{email}' created (UUID: '{user_uuid}')")
 
-            group = keycloak_manager.create_group(realm_name, group_name)
-            group_uuid = group.headers["Location"].split("/")[-1]
-            group_url = group.headers["Location"]
-            logging.info(f"Group '{group_name}' created (UUID: '{group_uuid}')")
+            if keycloak_manager.get_groups(group_name) == False:
+                group = keycloak_manager.create_group(realm_name, group_name)
+                group_uuid = group.headers["Location"].split("/")[-1]
+                group_url = group.headers["Location"]
+                logging.info(f"Group '{group_name}' created (UUID: '{group_uuid}')")
+            else:
+                group_uuid = keycloak_manager.get_groups(group_name)
+                logging.info(f"Group '{group_name}' found (UUID: '{group_uuid}')")
             u2g = keycloak_manager.add_users_to_group(user_uuid, group_uuid)
             logging.info(f"User '{email}' added to group '{group_name}' (Status: {str(u2g.ok)})")
         
-        logging.info("done 1")
-        logging.info("done 2")
+        logging.info("done!")
     except requests.exceptions.RequestException as e:
         logging.error(f"API error: {e}")
     except Exception as e:
